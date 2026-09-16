@@ -22,6 +22,7 @@ require_cmd() {
 require_cmd brew
 require_cmd bfs
 require_cmd git
+require_cmd jaq
 require_cmd rsync
 require_cmd ug
 require_cmd uu-cksum
@@ -66,10 +67,20 @@ brew test "$FQ_FORMULA"
 
 JSON_FILE="$(bfs "$OUT_DIR" -maxdepth 1 -name '*.bottle.json' -print -quit)"
 [[ -n "$JSON_FILE" ]] || die "Homebrew did not create bottle JSON."
+LOCAL_BOTTLE="$(jaq -r '.[] | .bottle.tags[] | .local_filename' "$JSON_FILE")"
+REMOTE_BOTTLE="$(jaq -r '.[] | .bottle.tags[] | .filename' "$JSON_FILE")"
+[[ -n "$LOCAL_BOTTLE" && -n "$REMOTE_BOTTLE" ]] ||
+  die "Bottle filenames are missing from $JSON_FILE"
+[[ -f "$OUT_DIR/$LOCAL_BOTTLE" ]] ||
+  die "Local bottle not found: $OUT_DIR/$LOCAL_BOTTLE"
+if [[ "$LOCAL_BOTTLE" != "$REMOTE_BOTTLE" ]]; then
+  mv "$OUT_DIR/$LOCAL_BOTTLE" "$OUT_DIR/$REMOTE_BOTTLE"
+fi
+
 brew bottle --merge --write --no-commit "$JSON_FILE"
 
 TAPPED_REPO="$(brew --repository "$TAP_NAME")"
-rsync -a "${TAPPED_REPO}/Formula/${FORMULA}.rb" +  "${TAP_SOURCE}/Formula/${FORMULA}.rb"
+rsync -a "${TAPPED_REPO}/Formula/${FORMULA}.rb" "${TAP_SOURCE}/Formula/${FORMULA}.rb"
 
 cp "${TAP_SOURCE}/Formula/${FORMULA}.rb" "$OUT_DIR/"
 cp "${TAP_SOURCE}/README.md" "$OUT_DIR/homebrew-tap-README.md"
