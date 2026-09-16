@@ -12,6 +12,7 @@ die() {
 }
 
 command -v gh >/dev/null 2>&1 || die "GitHub CLI not found: gh"
+command -v uu-cksum >/dev/null 2>&1 || die "Checksum utility not found: uu-cksum"
 [[ -d "$OUT_DIR" ]] || die "Release directory not found: $OUT_DIR"
 compgen -G "${OUT_DIR}/*.bottle.tar.gz" >/dev/null ||
   die "No Homebrew bottle tarball found in $OUT_DIR"

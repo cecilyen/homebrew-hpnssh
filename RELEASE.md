@@ -7,12 +7,25 @@ The release target is:
 - Tag: `hpnssh-awslc-18.11.0-macos26-arm64`
 - Bottle tag: `arm64_tahoe`
 
+## Prerequisites
+
+```sh
+brew install bfs jaq ugrep uutils-coreutils
+```
+
+The build host must own or be able to write its Homebrew Cellar and tap
+directory. Do not change ownership of a managed or organization-controlled
+Homebrew installation. Use an approved build host or ask the administrator to
+run the build when those paths are not writable.
+
 ## 1. Validate the Tap
 
 ```sh
 brew style Formula/hpnssh-awslc.rb
-brew audit --strict --online cecilyen/hpnssh/hpnssh-awslc
+brew audit --strict cecilyen/hpnssh/hpnssh-awslc
 ```
+
+Add `--online` after the GitHub repository exists.
 
 ## 2. Build the Bottle
 
@@ -20,9 +33,9 @@ brew audit --strict --online cecilyen/hpnssh/hpnssh-awslc
 scripts/build-bottle.sh
 ```
 
-This builds from source with `brew install --build-bottle`, runs the formula
-test, creates bottle JSON and the bottle tarball, and writes the bottle checksum
-into the formula.
+The script builds with `brew install --build-bottle`, runs the formula test,
+creates bottle JSON and the `arm64_tahoe` tarball, normalizes the release
+asset filename expected by Homebrew, and merges the checksum into the formula.
 
 ## 3. Commit and Push the Bottle Block
 
@@ -51,4 +64,8 @@ brew test cecilyen/hpnssh/hpnssh-awslc
 hpnssh -V
 ```
 
-Do not upload host private keys, local SSH configuration, or build logs.
+Confirm that the install downloads
+`hpnssh-awslc-18.11.0.arm64_tahoe.bottle.tar.gz` from the GitHub release.
+
+Do not upload host private keys, local SSH configuration, source trees, build
+logs, or temporary Homebrew prefixes.
