@@ -70,7 +70,7 @@ class HpnsshAwslc < Formula
     refute_match "chacha20-poly1305-mt@hpnssh.org", shell_output("#{bin}/hpnssh -Q cipher")
 
     linkage = shell_output("otool -L #{bin}/hpnssh")
-    assert_match "#{Formula["aws-lc"].opt_lib}/libcrypto.dylib", linkage
+    assert_match %r{/opt/aws-lc/lib/libcrypto\.dylib}, linkage
     assert_match "/usr/lib/libz.1.dylib", linkage
     assert_match "Kerberos.framework", linkage
     refute_match "libbsm", linkage
