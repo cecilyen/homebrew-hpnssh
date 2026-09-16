@@ -15,8 +15,8 @@ class HpnsshAwslc < Formula
   depends_on "libtool" => :build
   depends_on "llvm" => :build
   depends_on "pkgconf" => :build
-  depends_on "aws-lc"
   depends_on arch: :arm64
+  depends_on "aws-lc"
   depends_on macos: :tahoe
 
   uses_from_macos "krb5"
@@ -26,8 +26,8 @@ class HpnsshAwslc < Formula
   patch :DATA
 
   def install
-    awslc = Formula["aws-lc"].opt_prefix
-    llvm = Formula["llvm"].opt_prefix
+    awslc = formula_opt_prefix("aws-lc")
+    llvm = formula_opt_prefix("llvm")
     sdkroot = MacOS.sdk_path
 
     ENV["CC"] = (llvm/"bin/clang").to_s
@@ -105,7 +105,8 @@ class HpnsshAwslc < Formula
       next unless dir.exist?
 
       dir.children.each do |path|
-        next unless path.file? && path.executable?
+        next unless path.file?
+        next unless path.executable?
         next unless Utils.safe_popen_read("file", path).include?("Mach-O")
 
         system strip, "-S", path
