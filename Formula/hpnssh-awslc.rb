@@ -27,6 +27,8 @@ class HpnsshAwslc < Formula
 
     ENV["CC"] = (llvm/"bin/clang").to_s
     ENV["CXX"] = (llvm/"bin/clang++").to_s
+    ENV["AR"] = (llvm/"bin/llvm-ar").to_s
+    ENV["RANLIB"] = (llvm/"bin/llvm-ranlib").to_s
     ENV["CFLAGS"] = "-O3 -arch arm64 -flto=thin -pipe"
     ENV["CXXFLAGS"] = "-O3 -arch arm64 -flto=thin -pipe"
     ENV["CPPFLAGS"] = "-isysroot #{sdkroot} -I#{awslc}/include -DHPNSSH_AWSLC"
