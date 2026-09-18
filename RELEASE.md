@@ -34,8 +34,9 @@ scripts/build-bottle.sh
 ```
 
 The script builds with `brew install --build-bottle`, runs the formula test,
-creates bottle JSON and the `arm64_tahoe` tarball, normalizes the release
-asset filename expected by Homebrew, and merges the checksum into the formula.
+creates rebuild-0 bottle JSON and the `arm64_tahoe` tarball, normalizes the
+release asset filename expected by Homebrew, and merges the checksum into the
+formula.
 
 ## 3. Commit and Push the Bottle Block
 

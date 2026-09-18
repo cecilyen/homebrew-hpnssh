@@ -62,7 +62,7 @@ brew test "$FQ_FORMULA"
 
 (
   cd "$OUT_DIR"
-  brew bottle --json --root-url="$ROOT_URL" "$FQ_FORMULA"
+  brew bottle --json --no-rebuild --root-url="$ROOT_URL" "$FQ_FORMULA"
 )
 
 JSON_FILE="$(bfs "$OUT_DIR" -maxdepth 1 -name '*.bottle.json' -print -quit)"
@@ -98,6 +98,9 @@ Prebuilt Homebrew bottle for macOS 26 Tahoe on Apple Silicon.
 - Default port 22
 - Stripped and ad-hoc signed executables
 - No host private keys
+
+HPN-SSH 18.11.1 fixes SecureBlackbox/MobaXterm SFTP rekey interoperability
+and preserves `DisableMTAES` across later rekeys.
 
 Install:
 

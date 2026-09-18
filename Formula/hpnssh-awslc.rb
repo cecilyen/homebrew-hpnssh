@@ -5,6 +5,11 @@ class HpnsshAwslc < Formula
   sha256 "225238697414a73049770d87fab2453ab5871c1ae55c8853e4530ca5f2591239"
   license "SSH-OpenSSH"
 
+  bottle do
+    root_url "https://github.com/cecilyen/homebrew-hpnssh/releases/download/hpnssh-awslc-18.11.1-macos26-arm64"
+    sha256 arm64_tahoe: "46f63781d3eb61fae765b4eef2c36132aa116995fe1e3ba54511c98c3c03ce83"
+  end
+
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build
