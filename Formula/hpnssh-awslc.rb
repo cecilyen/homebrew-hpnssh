@@ -1,14 +1,9 @@
 class HpnsshAwslc < Formula
   desc "High Performance Networking fork of OpenSSH built with AWS-LC"
   homepage "https://github.com/rapier1/hpn-ssh"
-  url "https://github.com/rapier1/hpn-ssh/archive/refs/tags/hpn-18.11.0.tar.gz"
-  sha256 "8edcc5c572284747be436ebffe3ff7404703af76f890c7f2665a58bd5c84dbc9"
+  url "https://github.com/rapier1/hpn-ssh/archive/refs/tags/hpn-18.11.1.tar.gz"
+  sha256 "225238697414a73049770d87fab2453ab5871c1ae55c8853e4530ca5f2591239"
   license "SSH-OpenSSH"
-
-  bottle do
-    root_url "https://github.com/cecilyen/homebrew-hpnssh/releases/download/hpnssh-awslc-18.11.0-macos26-arm64"
-    sha256 arm64_tahoe: "798f6a4b6964486e88a96ebccc182840720f766c5af37e7e5d54e6a0ddddc62c"
-  end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
@@ -66,7 +61,7 @@ class HpnsshAwslc < Formula
 
   test do
     version_output = shell_output("#{bin}/hpnssh -V 2>&1")
-    assert_match "OpenSSH_10.5p1_hpn18.11.0", version_output
+    assert_match "OpenSSH_10.5p1_hpn18.11.1", version_output
     assert_match "AWS-LC", version_output
 
     config = shell_output("#{bin}/hpnssh -F /dev/null -G localhost 2>/dev/null")

@@ -5,7 +5,7 @@ TAP_SOURCE="${TAP_SOURCE:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 TAP_NAME="${TAP_NAME:-cecilyen/hpnssh}"
 FORMULA="${FORMULA:-hpnssh-awslc}"
 GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-cecilyen/homebrew-hpnssh}"
-RELEASE_TAG="${RELEASE_TAG:-hpnssh-awslc-18.11.0-macos26-arm64}"
+RELEASE_TAG="${RELEASE_TAG:-hpnssh-awslc-18.11.1-macos26-arm64}"
 ROOT_URL="${ROOT_URL:-https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}}"
 OUT_DIR="${OUT_DIR:-${TAP_SOURCE}/dist/${RELEASE_TAG}}"
 FQ_FORMULA="${TAP_NAME}/${FORMULA}"
@@ -87,11 +87,11 @@ cp "${TAP_SOURCE}/README.md" "$OUT_DIR/homebrew-tap-README.md"
 cp "${TAP_SOURCE}/RELEASE.md" "$OUT_DIR/RELEASE.md"
 
 cat > "$OUT_DIR/RELEASE_NOTES.md" <<'NOTES'
-# HPN-SSH 18.11.0 AWS-LC bottle
+# HPN-SSH 18.11.1 AWS-LC bottle
 
 Prebuilt Homebrew bottle for macOS 26 Tahoe on Apple Silicon.
 
-- HPN-SSH 18.11.0 / OpenSSH 10.5p1
+- HPN-SSH 18.11.1 / OpenSSH 10.5p1
 - AWS-LC runtime dependency
 - macOS system zlib, libedit, PAM, and Kerberos
 - ARM64 ThinLTO build

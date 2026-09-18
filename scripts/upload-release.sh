@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 TAP_SOURCE="${TAP_SOURCE:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-cecilyen/homebrew-hpnssh}"
-RELEASE_TAG="${RELEASE_TAG:-hpnssh-awslc-18.11.0-macos26-arm64}"
+RELEASE_TAG="${RELEASE_TAG:-hpnssh-awslc-18.11.1-macos26-arm64}"
 OUT_DIR="${OUT_DIR:-${TAP_SOURCE}/dist/${RELEASE_TAG}}"
 
 die() {
@@ -39,7 +39,7 @@ if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; t
 else
   gh release create "$RELEASE_TAG" "${assets[@]}" \
     --repo "$GITHUB_REPOSITORY" \
-    --title "HPN-SSH 18.11.0 AWS-LC macOS 26 ARM64 bottle" \
+    --title "HPN-SSH 18.11.1 AWS-LC macOS 26 ARM64 bottle" \
     --notes-file "${OUT_DIR}/RELEASE_NOTES.md"
 fi
 

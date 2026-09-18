@@ -4,7 +4,7 @@ The release target is:
 
 - Tap: `cecilyen/hpnssh`
 - Repository: `cecilyen/homebrew-hpnssh`
-- Tag: `hpnssh-awslc-18.11.0-macos26-arm64`
+- Tag: `hpnssh-awslc-18.11.1-macos26-arm64`
 - Bottle tag: `arm64_tahoe`
 
 ## Prerequisites
@@ -41,7 +41,7 @@ asset filename expected by Homebrew, and merges the checksum into the formula.
 
 ```sh
 git add Formula/hpnssh-awslc.rb README.md RELEASE.md scripts .gitignore
-git commit -m "Publish HPN-SSH 18.11.0 AWS-LC bottle"
+git commit -m "Publish HPN-SSH 18.11.1 AWS-LC bottle"
 git push origin main
 ```
 
@@ -65,7 +65,7 @@ hpnssh -V
 ```
 
 Confirm that the install downloads
-`hpnssh-awslc-18.11.0.arm64_tahoe.bottle.tar.gz` from the GitHub release.
+`hpnssh-awslc-18.11.1.arm64_tahoe.bottle.tar.gz` from the GitHub release.
 
 Do not upload host private keys, local SSH configuration, source trees, build
 logs, or temporary Homebrew prefixes.

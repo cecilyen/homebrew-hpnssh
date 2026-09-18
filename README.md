@@ -1,6 +1,6 @@
 # Homebrew HPN-SSH with AWS-LC
 
-This tap distributes HPN-SSH 18.11.0 for Apple Silicon Macs running macOS 26
+This tap distributes HPN-SSH 18.11.1 for Apple Silicon Macs running macOS 26
 Tahoe. The formula builds the official `rapier1/hpn-ssh` source with AWS-LC
 and provides an `arm64_tahoe` bottle.
 
@@ -15,7 +15,7 @@ hpnssh -V
 Expected version output:
 
 ```text
-OpenSSH_10.5p1_hpn18.11.0, AWS-LC 5.9.0
+OpenSSH_10.5p1_hpn18.11.1, AWS-LC 5.9.0
 ```
 
 The commands retain the upstream HPN names: `hpnssh`, `hpnsshd`, `hpnscp`,
