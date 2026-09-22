@@ -80,6 +80,8 @@ class HpnsshOpenssl < Formula
 
     sftp_linkage = shell_output("otool -L #{bin}/hpnsftp")
     assert_match "/usr/lib/libedit.3.dylib", sftp_linkage
+    helper_strings = shell_output("strings #{libexec}/hpnssh-pkcs11-helper")
+    assert_match "/usr/X11R6/bin/ssh-askpass", helper_strings
     assert_path_exists etc/"hpnssh/ssh_known_hosts"
     assert_path_exists etc/"hpnssh/ssh_known_hosts2"
     refute_path_exists etc/"hpnssh/ssh_host_ed25519_key"
@@ -152,7 +154,17 @@ __END__
 +#define HPNSSH_DEFAULT_PORT    22
  
  /*
-  * Maximum number of certificate files that can be specified
+ * Maximum number of certificate files that can be specified
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -21,6 +21,6 @@
+ VPATH=@srcdir@
+ SSH_PROGRAM=@bindir@/hpnssh
+-ASKPASS_PROGRAM=$(libexecdir)/hpnssh-askpass
++ASKPASS_PROGRAM=/usr/X11R6/bin/ssh-askpass
+ SFTP_SERVER=$(libexecdir)/hpnsftp-server
+ SSH_KEYSIGN=$(libexecdir)/hpnssh-keysign
+ SSHD_SESSION=$(libexecdir)/hpnsshd-session
 --- a/sshd_config
 +++ b/sshd_config
 @@ -10,7 +10,7 @@
