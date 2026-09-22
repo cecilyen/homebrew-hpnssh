@@ -24,6 +24,7 @@ class HpnsshOpenssl < Formula
   uses_from_macos "zlib"
 
   conflicts_with "hpnssh-awslc", because: "both install the same HPN-SSH commands"
+  conflicts_with "openssh", because: "only one Homebrew SSH implementation should be active"
 
   patch :DATA
 
