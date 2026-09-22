@@ -23,6 +23,8 @@ class HpnsshOpenssl < Formula
   uses_from_macos "libedit"
   uses_from_macos "zlib"
 
+  conflicts_with "hpnssh-awslc", because: "both install the same HPN-SSH commands"
+
   patch :DATA
 
   def install
