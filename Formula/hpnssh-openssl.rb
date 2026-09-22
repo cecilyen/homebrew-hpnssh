@@ -5,6 +5,11 @@ class HpnsshOpenssl < Formula
   sha256 "225238697414a73049770d87fab2453ab5871c1ae55c8853e4530ca5f2591239"
   license "SSH-OpenSSH"
 
+  bottle do
+    root_url "https://github.com/cecilyen/homebrew-hpnssh/releases/download/hpnssh-openssl-18.11.1-macos26-arm64"
+    sha256 arm64_tahoe: "6a8daeed42b7fc9b785c0d424d9436f9a9ac2964906dfb5b158dcf2649c18077"
+  end
+
   depends_on "autoconf" => :build
   depends_on "automake" => :build
   depends_on "libtool" => :build

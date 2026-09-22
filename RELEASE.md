@@ -1,11 +1,11 @@
 # Release Procedure
 
-The release target is:
+Current release targets:
 
-- Tap: `cecilyen/hpnssh`
-- Repository: `cecilyen/homebrew-hpnssh`
-- Tag: `hpnssh-awslc-18.11.1-macos26-arm64`
-- Bottle tag: `arm64_tahoe`
+| Formula | Tag | Bottle tag |
+| --- | --- | --- |
+| `hpnssh-openssl` | `hpnssh-openssl-18.11.1-macos26-arm64` | `arm64_tahoe` |
+| `hpnssh-awslc` | `hpnssh-awslc-18.11.1-macos26-arm64` | `arm64_tahoe` |
 
 ## Prerequisites
 
@@ -13,60 +13,69 @@ The release target is:
 brew install bfs jaq ugrep uutils-coreutils
 ```
 
-The build host must own or be able to write its Homebrew Cellar and tap
-directory. Do not change ownership of a managed or organization-controlled
-Homebrew installation. Use an approved build host or ask the administrator to
-run the build when those paths are not writable.
+The build host must have a writable Homebrew Cellar and tap directory. Do
+not change ownership of a managed Homebrew installation. Use an isolated
+user-owned Homebrew staging prefix or an approved build host.
 
 ## 1. Validate the Tap
 
 ```sh
-brew style Formula/hpnssh-awslc.rb
+brew style Formula/hpnssh-openssl.rb Formula/hpnssh-awslc.rb
+brew audit --strict cecilyen/hpnssh/hpnssh-openssl
 brew audit --strict cecilyen/hpnssh/hpnssh-awslc
 ```
 
-Add `--online` after the GitHub repository exists.
+## 2. Build a Bottle
 
-## 2. Build the Bottle
+OpenSSL 3:
+
+```sh
+FORMULA=hpnssh-openssl \
+RELEASE_TAG=hpnssh-openssl-18.11.1-macos26-arm64 \
+scripts/build-bottle.sh
+```
+
+AWS-LC:
 
 ```sh
 scripts/build-bottle.sh
 ```
 
 The script builds with `brew install --build-bottle`, runs the formula test,
-creates rebuild-0 bottle JSON and the `arm64_tahoe` tarball, normalizes the
-release asset filename expected by Homebrew, and merges the checksum into the
-formula.
+creates rebuild-0 bottle JSON and the `arm64_tahoe` archive, normalizes the
+release filename, and merges the checksum into the formula.
 
-## 3. Commit and Push the Bottle Block
+## 3. Commit and Push
 
 ```sh
-git add Formula/hpnssh-awslc.rb README.md RELEASE.md scripts .gitignore
-git commit -m "Publish HPN-SSH 18.11.1 AWS-LC bottle"
+git add Formula README.md RELEASE.md scripts .gitignore
+git commit -m "Publish HPN-SSH 18.11.1 OpenSSL bottle"
 git push origin main
 ```
 
 ## 4. Upload Release Assets
 
 ```sh
+FORMULA=hpnssh-openssl \
+RELEASE_TAG=hpnssh-openssl-18.11.1-macos26-arm64 \
 scripts/upload-release.sh
 ```
 
-The release contains the bottle, bottle JSON, formula snapshot, release notes,
-and `SHA256SUMS`.
+The uploader refuses to overwrite an existing release unless
+`ALLOW_CLOBBER=1` is set explicitly.
 
 ## 5. Validate a Bottle Pour
 
 ```sh
-brew uninstall hpnssh-awslc
+brew uninstall hpnssh-openssl
 brew update
-brew install --force-bottle cecilyen/hpnssh/hpnssh-awslc
-brew test cecilyen/hpnssh/hpnssh-awslc
+brew install --force-bottle cecilyen/hpnssh/hpnssh-openssl
+brew test cecilyen/hpnssh/hpnssh-openssl
 hpnssh -V
 ```
 
-Confirm that the install downloads
-`hpnssh-awslc-18.11.1.arm64_tahoe.bottle.tar.gz` from the GitHub release.
+Confirm that Homebrew downloads
+`hpnssh-openssl-18.11.1.arm64_tahoe.bottle.tar.gz` from the GitHub release.
 
-Do not upload host private keys, local SSH configuration, source trees, build
-logs, or temporary Homebrew prefixes.
+Do not upload host private keys, local SSH configuration, source trees,
+build logs, or temporary Homebrew prefixes.

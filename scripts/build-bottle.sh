@@ -5,10 +5,7 @@ TAP_SOURCE="${TAP_SOURCE:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 TAP_NAME="${TAP_NAME:-cecilyen/hpnssh}"
 FORMULA="${FORMULA:-hpnssh-awslc}"
 GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-cecilyen/homebrew-hpnssh}"
-RELEASE_TAG="${RELEASE_TAG:-hpnssh-awslc-18.11.1-macos26-arm64}"
-ROOT_URL="${ROOT_URL:-https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}}"
-OUT_DIR="${OUT_DIR:-${TAP_SOURCE}/dist/${RELEASE_TAG}}"
-FQ_FORMULA="${TAP_NAME}/${FORMULA}"
+VERSION="${VERSION:-18.11.1}"
 
 die() {
   printf 'ERROR: %s\n' "$*" >&2
@@ -18,6 +15,25 @@ die() {
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "Required command not found: $1"
 }
+
+case "$FORMULA" in
+  hpnssh-awslc)
+    RELEASE_HEADING="HPN-SSH ${VERSION} AWS-LC bottle"
+    CRYPTO_NOTE="AWS-LC runtime dependency; HPN AES-CTR-MT and ChaCha20-Poly1305-MT are disabled"
+    ;;
+  hpnssh-openssl)
+    RELEASE_HEADING="HPN-SSH ${VERSION} OpenSSL 3 bottle"
+    CRYPTO_NOTE="OpenSSL 3 runtime dependency; HPN AES-CTR-MT and ChaCha20-Poly1305-MT are enabled"
+    ;;
+  *)
+    die "Unsupported formula: $FORMULA"
+    ;;
+esac
+
+RELEASE_TAG="${RELEASE_TAG:-${FORMULA}-${VERSION}-macos26-arm64}"
+ROOT_URL="${ROOT_URL:-https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}}"
+OUT_DIR="${OUT_DIR:-${TAP_SOURCE}/dist/${RELEASE_TAG}}"
+FQ_FORMULA="${TAP_NAME}/${FORMULA}"
 
 require_cmd brew
 require_cmd bfs
@@ -86,13 +102,13 @@ cp "${TAP_SOURCE}/Formula/${FORMULA}.rb" "$OUT_DIR/"
 cp "${TAP_SOURCE}/README.md" "$OUT_DIR/homebrew-tap-README.md"
 cp "${TAP_SOURCE}/RELEASE.md" "$OUT_DIR/RELEASE.md"
 
-cat > "$OUT_DIR/RELEASE_NOTES.md" <<'NOTES'
-# HPN-SSH 18.11.1 AWS-LC bottle
+cat > "$OUT_DIR/RELEASE_NOTES.md" <<NOTES
+# ${RELEASE_HEADING}
 
 Prebuilt Homebrew bottle for macOS 26 Tahoe on Apple Silicon.
 
 - HPN-SSH 18.11.1 / OpenSSH 10.5p1
-- AWS-LC runtime dependency
+- ${CRYPTO_NOTE}
 - macOS system zlib, libedit, PAM, and Kerberos
 - ARM64 ThinLTO build
 - Default port 22
@@ -100,20 +116,20 @@ Prebuilt Homebrew bottle for macOS 26 Tahoe on Apple Silicon.
 - No host private keys
 
 HPN-SSH 18.11.1 fixes SecureBlackbox/MobaXterm SFTP rekey interoperability
-and preserves `DisableMTAES` across later rekeys.
+and preserves \`DisableMTAES\` across later rekeys.
 
 Install:
 
-```sh
+\`\`\`sh
 brew tap cecilyen/hpnssh
-brew install hpnssh-awslc
-```
+brew install ${FORMULA}
+\`\`\`
 NOTES
 
 (
   cd "$OUT_DIR"
   LC_ALL=C uu-cksum -a sha256 -- \
-    ./*.bottle.tar.gz ./*.bottle.json ./hpnssh-awslc.rb \
+    ./*.bottle.tar.gz ./*.bottle.json "./${FORMULA}.rb" \
     ./homebrew-tap-README.md ./RELEASE.md ./RELEASE_NOTES.md > SHA256SUMS
 )
 
