@@ -1,13 +1,13 @@
 class HpnsshOpenssl < Formula
-  desc "High Performance Networking fork of OpenSSH built with OpenSSL 3"
+  desc "High Performance Networking fork of OpenSSH built with OpenSSL"
   homepage "https://github.com/rapier1/hpn-ssh"
-  url "https://github.com/rapier1/hpn-ssh/archive/refs/tags/hpn-18.11.1.tar.gz"
-  sha256 "225238697414a73049770d87fab2453ab5871c1ae55c8853e4530ca5f2591239"
+  url "https://github.com/rapier1/hpn-ssh/archive/refs/tags/hpn-18.12.1.tar.gz"
+  sha256 "4d3aa614643c0f87672b7287b4c3190481f4b155878825771e1e9c697965f0e9"
   license "SSH-OpenSSH"
 
   bottle do
-    root_url "https://github.com/cecilyen/homebrew-hpnssh/releases/download/hpnssh-openssl-18.11.1-macos26-arm64"
-    sha256 arm64_tahoe: "6a8daeed42b7fc9b785c0d424d9436f9a9ac2964906dfb5b158dcf2649c18077"
+    root_url "https://github.com/cecilyen/homebrew-hpnssh/releases/download/hpnssh-openssl-18.12.1-macos26-arm64"
+    sha256 arm64_tahoe: "71265b69a1c562381f636cdd69f3c06fab0b32dc5b1dbf30e116a01d2a4b8950"
   end
 
   depends_on "autoconf" => :build
@@ -17,7 +17,7 @@ class HpnsshOpenssl < Formula
   depends_on "pkgconf" => :build
   depends_on arch: :arm64
   depends_on macos: :tahoe
-  depends_on "openssl@3"
+  depends_on "openssl@4"
 
   uses_from_macos "krb5"
   uses_from_macos "libedit"
@@ -29,18 +29,18 @@ class HpnsshOpenssl < Formula
   patch :DATA
 
   def install
-    llvm = formula_opt_prefix("llvm")
-    openssl = formula_opt_prefix("openssl@3")
+    llvm = Formula["llvm"].opt_prefix
+    openssl = Formula["openssl@4"].opt_prefix
     sdkroot = MacOS.sdk_path
 
     ENV["CC"] = (llvm/"bin/clang").to_s
     ENV["CXX"] = (llvm/"bin/clang++").to_s
     ENV["AR"] = (llvm/"bin/llvm-ar").to_s
     ENV["RANLIB"] = (llvm/"bin/llvm-ranlib").to_s
-    ENV["CFLAGS"] = "-O3 -arch arm64 -flto=thin -pipe"
-    ENV["CXXFLAGS"] = "-O3 -arch arm64 -flto=thin -pipe"
+    ENV["CFLAGS"] = "-O3 -arch arm64 -mcpu=apple-m1 -mtune=apple-m2 -flto=thin -pipe"
+    ENV["CXXFLAGS"] = "-O3 -arch arm64 -mcpu=apple-m1 -mtune=apple-m2 -flto=thin -pipe"
     ENV["CPPFLAGS"] = "-isysroot #{sdkroot} -I#{openssl}/include"
-    ENV["LDFLAGS"] = "-arch arm64 -flto=thin -Wl,-dead_strip " \
+    ENV["LDFLAGS"] = "-arch arm64 -mcpu=apple-m1 -mtune=apple-m2 -flto=thin -Wl,-dead_strip " \
                      "-isysroot #{sdkroot} -Wl,-search_paths_first " \
                      "-L#{openssl}/lib -Wl,-rpath,#{openssl}/lib -framework Kerberos"
     ENV.prepend_path "PKG_CONFIG_PATH", openssl/"lib/pkgconfig"
@@ -63,14 +63,15 @@ class HpnsshOpenssl < Formula
 
     system "make", "-j#{ENV.make_jobs}"
     system "make", "install-nokeys"
+    share.install_symlink libexec => "hpnssh"
     create_global_known_hosts_files
     strip_and_sign_executables
   end
 
   test do
     version_output = shell_output("#{bin}/hpnssh -V 2>&1")
-    assert_match "OpenSSH_10.5p1_hpn18.11.1", version_output
-    assert_match "OpenSSL 3.", version_output
+    assert_match "OpenSSH_10.6p2_hpn18.12.1", version_output
+    assert_match "OpenSSL 4.", version_output
     refute_match "AWS-LC", version_output
 
     config = shell_output("#{bin}/hpnssh -F /dev/null -G localhost 2>/dev/null")
@@ -81,15 +82,14 @@ class HpnsshOpenssl < Formula
     assert_match "chacha20-poly1305-mt@hpnssh.org", ciphers
 
     linkage = shell_output("otool -L #{bin}/hpnssh")
-    assert_match %r{/opt/openssl@3/lib/libcrypto\.3\.dylib}, linkage
+    assert_match %r{/opt/openssl@4/lib/libcrypto\.4\.dylib}, linkage
     assert_match "/usr/lib/libz.1.dylib", linkage
     assert_match "Kerberos.framework", linkage
     refute_match "libbsm", linkage
 
     sftp_linkage = shell_output("otool -L #{bin}/hpnsftp")
     assert_match "/usr/lib/libedit.3.dylib", sftp_linkage
-    helper_strings = shell_output("strings #{libexec}/hpnssh-pkcs11-helper")
-    assert_match "/usr/X11R6/bin/ssh-askpass", helper_strings
+    assert_path_exists share/"hpnssh/hpnsshd-session"
     assert_path_exists etc/"hpnssh/ssh_known_hosts"
     assert_path_exists etc/"hpnssh/ssh_known_hosts2"
     refute_path_exists etc/"hpnssh/ssh_host_ed25519_key"
@@ -126,32 +126,6 @@ class HpnsshOpenssl < Formula
 end
 
 __END__
---- a/configure.ac
-+++ b/configure.ac
-@@ -859,6 +859,7 @@
- 	AC_CHECK_LIB([sandbox], [sandbox_apply], [
- 	    SSHDLIBS="$SSHDLIBS -lsandbox"
- 	])
-+	AC_CHECK_DECLS(kSBXProfilePureComputation, [], [], [#include <sandbox.h>])
- 	# proc_pidinfo()-based closefrom() replacement.
- 	AC_CHECK_HEADERS([libproc.h])
- 	AC_CHECK_FUNCS([proc_pidinfo])
-@@ -3960,10 +3961,12 @@
- 
- if test "x$sandbox_arg" = "xdarwin" || \
-      ( test -z "$sandbox_arg" && test "x$ac_cv_func_sandbox_init" = "xyes" && \
--       test "x$ac_cv_header_sandbox_h" = "xyes") ; then
-+       test "x$ac_cv_header_sandbox_h" = "xyes" && \
-+       test "x$ac_cv_have_decl_kSBXProfilePureComputation" = "xyes") ; then
- 	test "x$ac_cv_func_sandbox_init" != "xyes" -o \
--	     "x$ac_cv_header_sandbox_h" != "xyes" && \
--		AC_MSG_ERROR([Darwin seatbelt sandbox requires sandbox.h and sandbox_init function])
-+	     "x$ac_cv_header_sandbox_h" != "xyes" -o \
-+	     "x$ac_cv_have_decl_kSBXProfilePureComputation" != "xyes" && \
-+		AC_MSG_ERROR([Darwin seatbelt sandbox requires sandbox.h, sandbox_init() and kSBXProfilePureComputation])
- 	SANDBOX_STYLE="darwin"
- 	AC_DEFINE([SANDBOX_DARWIN], [1], [Sandbox using Darwin sandbox_init(3)])
- elif test "x$sandbox_arg" = "xseccomp_filter" || \
 --- a/ssh.h
 +++ b/ssh.h
 @@ -14,7 +14,7 @@

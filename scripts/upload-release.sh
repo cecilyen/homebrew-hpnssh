@@ -4,7 +4,7 @@ set -Eeuo pipefail
 TAP_SOURCE="${TAP_SOURCE:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-cecilyen/homebrew-hpnssh}"
 FORMULA="${FORMULA:-hpnssh-awslc}"
-VERSION="${VERSION:-18.11.1}"
+VERSION="${VERSION:-18.12.1}"
 RELEASE_TAG="${RELEASE_TAG:-${FORMULA}-${VERSION}-macos26-arm64}"
 OUT_DIR="${OUT_DIR:-${TAP_SOURCE}/dist/${RELEASE_TAG}}"
 
@@ -21,7 +21,7 @@ case "$FORMULA" in
     RELEASE_TITLE="HPN-SSH ${VERSION} AWS-LC macOS 26 ARM64 bottle"
     ;;
   hpnssh-openssl)
-    RELEASE_TITLE="HPN-SSH ${VERSION} OpenSSL 3 macOS 26 ARM64 bottle"
+    RELEASE_TITLE="HPN-SSH ${VERSION} OpenSSL macOS 26 ARM64 bottle"
     ;;
   *)
     die "Unsupported formula: $FORMULA"
@@ -34,7 +34,7 @@ compgen -G "${OUT_DIR}/*.bottle.tar.gz" >/dev/null ||
 [[ -f "${OUT_DIR}/SHA256SUMS" ]] || die "SHA256SUMS is missing."
 (
   cd "$OUT_DIR"
-  uu-cksum -c SHA256SUMS
+  uu-cksum -a sha256 -c SHA256SUMS
 )
 
 assets=(
@@ -46,6 +46,11 @@ assets=(
   "${OUT_DIR}"/RELEASE_NOTES.md
   "${OUT_DIR}"/SHA256SUMS
 )
+for extra in BUILD_PROVENANCE.json VALIDATION.json package-existing-bottle.rb; do
+  if [[ -f "${OUT_DIR}/${extra}" ]]; then
+    assets+=("${OUT_DIR}/${extra}")
+  fi
+done
 
 if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
   [[ "${ALLOW_CLOBBER:-0}" == "1" ]] ||

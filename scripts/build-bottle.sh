@@ -5,7 +5,7 @@ TAP_SOURCE="${TAP_SOURCE:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 TAP_NAME="${TAP_NAME:-cecilyen/hpnssh}"
 FORMULA="${FORMULA:-hpnssh-awslc}"
 GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-cecilyen/homebrew-hpnssh}"
-VERSION="${VERSION:-18.11.1}"
+VERSION="${VERSION:-18.12.1}"
 
 die() {
   printf 'ERROR: %s\n' "$*" >&2
@@ -22,8 +22,8 @@ case "$FORMULA" in
     CRYPTO_NOTE="AWS-LC runtime dependency; HPN AES-CTR-MT and ChaCha20-Poly1305-MT are disabled"
     ;;
   hpnssh-openssl)
-    RELEASE_HEADING="HPN-SSH ${VERSION} OpenSSL 3 bottle"
-    CRYPTO_NOTE="OpenSSL 3 runtime dependency; HPN AES-CTR-MT and ChaCha20-Poly1305-MT are enabled"
+    RELEASE_HEADING="HPN-SSH ${VERSION} OpenSSL bottle"
+    CRYPTO_NOTE="OpenSSL runtime dependency; HPN AES-CTR-MT and ChaCha20-Poly1305-MT are enabled"
     ;;
   *)
     die "Unsupported formula: $FORMULA"
@@ -107,16 +107,13 @@ cat > "$OUT_DIR/RELEASE_NOTES.md" <<NOTES
 
 Prebuilt Homebrew bottle for macOS 26 Tahoe on Apple Silicon.
 
-- HPN-SSH 18.11.1 / OpenSSH 10.5p1
+- HPN-SSH ${VERSION}
 - ${CRYPTO_NOTE}
 - macOS system zlib, libedit, PAM, and Kerberos
-- ARM64 ThinLTO build
+- ARM64 ThinLTO build; M1 instruction baseline and M2 tuning
 - Default port 22
 - Stripped and ad-hoc signed executables
 - No host private keys
-
-HPN-SSH 18.11.1 fixes SecureBlackbox/MobaXterm SFTP rekey interoperability
-and preserves \`DisableMTAES\` across later rekeys.
 
 Install:
 

@@ -1,13 +1,13 @@
 class HpnsshAwslc < Formula
   desc "High Performance Networking fork of OpenSSH built with AWS-LC"
   homepage "https://github.com/rapier1/hpn-ssh"
-  url "https://github.com/rapier1/hpn-ssh/archive/refs/tags/hpn-18.11.1.tar.gz"
-  sha256 "225238697414a73049770d87fab2453ab5871c1ae55c8853e4530ca5f2591239"
+  url "https://github.com/rapier1/hpn-ssh/archive/refs/tags/hpn-18.12.1.tar.gz"
+  sha256 "4d3aa614643c0f87672b7287b4c3190481f4b155878825771e1e9c697965f0e9"
   license "SSH-OpenSSH"
 
   bottle do
-    root_url "https://github.com/cecilyen/homebrew-hpnssh/releases/download/hpnssh-awslc-18.11.1-macos26-arm64"
-    sha256 arm64_tahoe: "46f63781d3eb61fae765b4eef2c36132aa116995fe1e3ba54511c98c3c03ce83"
+    root_url "https://github.com/cecilyen/homebrew-hpnssh/releases/download/hpnssh-awslc-18.12.1-macos26-arm64"
+    sha256 arm64_tahoe: "65d6ea77fcaaf4f63eb401163a69be2c5ad0574646aaf436559bc69a245d988e"
   end
 
   depends_on "autoconf" => :build
@@ -29,18 +29,18 @@ class HpnsshAwslc < Formula
   patch :DATA
 
   def install
-    awslc = formula_opt_prefix("aws-lc")
-    llvm = formula_opt_prefix("llvm")
+    awslc = Formula["aws-lc"].opt_prefix
+    llvm = Formula["llvm"].opt_prefix
     sdkroot = MacOS.sdk_path
 
     ENV["CC"] = (llvm/"bin/clang").to_s
     ENV["CXX"] = (llvm/"bin/clang++").to_s
     ENV["AR"] = (llvm/"bin/llvm-ar").to_s
     ENV["RANLIB"] = (llvm/"bin/llvm-ranlib").to_s
-    ENV["CFLAGS"] = "-O3 -arch arm64 -flto=thin -pipe"
-    ENV["CXXFLAGS"] = "-O3 -arch arm64 -flto=thin -pipe"
+    ENV["CFLAGS"] = "-O3 -arch arm64 -mcpu=apple-m1 -mtune=apple-m2 -flto=thin -pipe"
+    ENV["CXXFLAGS"] = "-O3 -arch arm64 -mcpu=apple-m1 -mtune=apple-m2 -flto=thin -pipe"
     ENV["CPPFLAGS"] = "-isysroot #{sdkroot} -I#{awslc}/include -DHPNSSH_AWSLC"
-    ENV["LDFLAGS"] = "-arch arm64 -flto=thin -Wl,-dead_strip " \
+    ENV["LDFLAGS"] = "-arch arm64 -mcpu=apple-m1 -mtune=apple-m2 -flto=thin -Wl,-dead_strip " \
                      "-isysroot #{sdkroot} -Wl,-search_paths_first " \
                      "-L#{awslc}/lib -Wl,-rpath,#{awslc}/lib -framework Kerberos"
     ENV.prepend_path "PKG_CONFIG_PATH", awslc/"lib/pkgconfig"
@@ -63,13 +63,14 @@ class HpnsshAwslc < Formula
 
     system "make", "-j#{ENV.make_jobs}"
     system "make", "install-nokeys"
+    share.install_symlink libexec => "hpnssh"
     create_global_known_hosts_files
     strip_and_sign_executables
   end
 
   test do
     version_output = shell_output("#{bin}/hpnssh -V 2>&1")
-    assert_match "OpenSSH_10.5p1_hpn18.11.1", version_output
+    assert_match "OpenSSH_10.6p2_hpn18.12.1", version_output
     assert_match "AWS-LC", version_output
 
     config = shell_output("#{bin}/hpnssh -F /dev/null -G localhost 2>/dev/null")
@@ -89,6 +90,8 @@ class HpnsshAwslc < Formula
     assert_path_exists etc/"hpnssh/ssh_known_hosts2"
     refute_path_exists etc/"hpnssh/ssh_host_ed25519_key"
     system "/usr/bin/codesign", "--verify", bin/"hpnssh"
+    system "/usr/bin/codesign", "--verify", sbin/"hpnsshd"
+    assert_path_exists share/"hpnssh/hpnsshd-session"
   end
 
   private
@@ -104,7 +107,7 @@ class HpnsshAwslc < Formula
 
   def strip_and_sign_executables
     strip = Utils.safe_popen_read("xcrun", "-find", "strip").strip
-    [bin, libexec].each do |dir|
+    [bin, sbin, libexec].each do |dir|
       next unless dir.exist?
 
       dir.children.each do |path|
@@ -120,32 +123,6 @@ class HpnsshAwslc < Formula
 end
 
 __END__
---- a/configure.ac
-+++ b/configure.ac
-@@ -859,6 +859,7 @@
- 	AC_CHECK_LIB([sandbox], [sandbox_apply], [
- 	    SSHDLIBS="$SSHDLIBS -lsandbox"
- 	])
-+	AC_CHECK_DECLS(kSBXProfilePureComputation, [], [], [#include <sandbox.h>])
- 	# proc_pidinfo()-based closefrom() replacement.
- 	AC_CHECK_HEADERS([libproc.h])
- 	AC_CHECK_FUNCS([proc_pidinfo])
-@@ -3960,10 +3961,12 @@
- 
- if test "x$sandbox_arg" = "xdarwin" || \
-      ( test -z "$sandbox_arg" && test "x$ac_cv_func_sandbox_init" = "xyes" && \
--       test "x$ac_cv_header_sandbox_h" = "xyes") ; then
-+       test "x$ac_cv_header_sandbox_h" = "xyes" && \
-+       test "x$ac_cv_have_decl_kSBXProfilePureComputation" = "xyes") ; then
- 	test "x$ac_cv_func_sandbox_init" != "xyes" -o \
--	     "x$ac_cv_header_sandbox_h" != "xyes" && \
--		AC_MSG_ERROR([Darwin seatbelt sandbox requires sandbox.h and sandbox_init function])
-+	     "x$ac_cv_header_sandbox_h" != "xyes" -o \
-+	     "x$ac_cv_have_decl_kSBXProfilePureComputation" != "xyes" && \
-+		AC_MSG_ERROR([Darwin seatbelt sandbox requires sandbox.h, sandbox_init() and kSBXProfilePureComputation])
- 	SANDBOX_STYLE="darwin"
- 	AC_DEFINE([SANDBOX_DARWIN], [1], [Sandbox using Darwin sandbox_init(3)])
- elif test "x$sandbox_arg" = "xseccomp_filter" || \
 --- a/ssh.h
 +++ b/ssh.h
 @@ -14,7 +14,7 @@
